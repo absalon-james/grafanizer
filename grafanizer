@@ -1,0 +1,135 @@
+#!/usr/bin/python
+import eventlet
+eventlet.monkey_patch()
+
+import logging
+import log
+
+import time
+
+from elasticsearch import Elasticsearch
+from elasticsearch.helpers import bulk
+
+from rackspace_monitoring.providers import get_driver
+from rackspace_monitoring.types import Provider
+
+from template import get_templates
+from models import Entity
+from config import get_config
+from parser import get_parser
+
+logger = logging.getLogger('grafanizer')
+
+
+def get_instance(username, api_key, url, auth_url=None, auth_token=None):
+    """
+    Returns an instance of the Rackspace Cloud Monitoring driver.
+
+    @param username - String username
+    @param api_key - String api key
+    @param url - String api url
+    @param auth_url - String auth url
+    @param auth_token - String auth token
+    @return - driver instance
+
+    """
+    driver = get_driver(Provider.RACKSPACE)
+    kwargs = {
+        'ex_force_base_url': url,
+        'ex_force_auth_url': auth_url,
+        'ex_force_auth_token': auth_token
+    }
+    return driver(username, api_key, **kwargs)
+
+
+def get_entity(api_url, auth_token, driver_entity):
+    """
+    Gets one entity with all checks and metrics included. An api call to list
+    all entities should have already been made. Pass the auth token and api
+    url from that call to this one to avoid reauth. In addition, this function
+    is meant to be called from a multi green thread environment.
+
+    @param api_url - String api url
+    @param auth_token - String auth token
+    @param driver_entity - Entity instance from driver.
+    @return - Instance of entity model with checks and metrics included.
+
+    """
+    driver = get_instance(None, None, api_url, auth_token=auth_token)
+    return Entity(driver, driver_entity)
+
+
+def get_entity_pile(config):
+    """
+    Returns an iterable greenpile which will contain instances of
+    the entity model. Will ultimately use one green thread per entity
+    up to a maximum of pilesize.
+
+    @param config - Dictionary with configuration
+    @return - eventlet.GreenPile
+
+    """
+    driver = get_instance(config['datasource']['username'],
+                          config['datasource']['api_key'],
+                          config['datasource']['url'],
+                          None, None)
+    driver_entities = driver.list_entities()
+
+    # Save the auth token and api url for use in other driver instances
+    auth_token = driver.connection.auth_token
+    api_url = driver.connection.get_endpoint()
+
+    entity_pile = eventlet.GreenPile(config.get('pool_size'))
+    for driver_entity in driver_entities:
+        entity_pile.spawn(get_entity, api_url, auth_token, driver_entity)
+    return entity_pile
+
+
+def grafanize():
+    """
+    Does all of the things.
+    Loads configuration
+    Gets the entities.
+    Persists templates to elastic search.
+
+    """
+    start = time.time()
+    logger.info("Starting...")
+
+    args = get_parser().parse_args()
+
+    config = get_config(args)
+
+    templates = get_templates(config['template_dir'], file_=args.file)
+
+    # End here if we are only validating
+    if args.validate:
+        exit()
+
+    entity_count = 0
+    entity_pile = get_entity_pile(config)
+
+    for e in entity_pile:
+        entity_count = entity_count + 1
+        if not len(e.metric_set):
+            continue
+        for t in templates:
+            t.consume(e)
+
+    es = Elasticsearch()
+    ops = []
+    for t in templates:
+        ops += t.es_ops()
+
+    count, _ = bulk(es, ops)
+    logger.info("Created %s dashboards from %s entities in %s seconds." % (
+        count,
+        entity_count,
+        time.time() - start
+    ))
+
+if __name__ == '__main__':
+    try:
+        grafanize()
+    except Exception:
+        logger.exception("Unable to recover")
