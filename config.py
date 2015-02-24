@@ -122,8 +122,16 @@ def get_config(args=None):
         'url': 'g_datasource_url'
     }, args)
 
+    if not config.get('pool_size'):
+        logger.debug("Using default of 100 for pool size")
+        config['pool_size'] = 100
+    if not config.get('template_dir'):
+        logger.debug("Using default of ~/templates for template_dir")
+        config['template_dir'] = '~/templates'
+
     if config.get('pool_size'):
         config['pool_size'] = int(config['pool_size'])
     if config.get('template_dir'):
         config['template_dir'] = os.path.expanduser(config['template_dir'])
+
     return config

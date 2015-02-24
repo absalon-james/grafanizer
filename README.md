@@ -74,8 +74,8 @@ In addition, individual configuration parameters can be overridden by either env
 
 | config parameter    | environment variable  | command line argument   | description |
 | ----------------    | --------------------  | ---------------------   | ----------- |
-| pool_size           | G_POOL_SIZE           | --g-pool-size           | Integer number of green thread workers. |
-| template_dir        | G_TEMPLATE_DIR        | --g-template-dir        | Path to directory containing templates. |
+| pool_size           | G_POOL_SIZE           | --g-pool-size           | Integer number of green thread workers. Defaults to 100 |
+| template_dir        | G_TEMPLATE_DIR        | --g-template-dir        | Path to directory containing templates. Defaults to ~/templates |
 | datasource:url      | G_DATASOURCE_URL      | --g-datasource_url      | Url |
 | datasource:username | G_DATASOURCE_USERNAME | --g-datasource-username | Username |
 | datasource:api_key  | G_DATASOURCE_API_KEY  | --g-datasource-api-key  | Api key |
