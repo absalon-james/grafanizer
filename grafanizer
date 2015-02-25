@@ -106,27 +106,33 @@ def grafanize():
     if args.validate:
         exit()
 
-    entity_count = 0
-    entity_pile = get_entity_pile(config)
+    for i in xrange(1, config.get('retries') + 1):
+        logger.debug("Attempt %s" % i)
+        try:
+            entity_count = 0
+            entity_pile = get_entity_pile(config)
 
-    for e in entity_pile:
-        entity_count = entity_count + 1
-        if not len(e.metric_set):
-            continue
-        for t in templates:
-            t.consume(e)
+            for e in entity_pile:
+                entity_count = entity_count + 1
+                if not len(e.metric_set):
+                    continue
+                for t in templates:
+                    t.consume(e)
 
-    es = Elasticsearch()
-    ops = []
-    for t in templates:
-        ops += t.es_ops()
+            es = Elasticsearch()
+            ops = []
+            for t in templates:
+                ops += t.es_ops()
 
-    count, _ = bulk(es, ops)
-    logger.info("Created %s dashboards from %s entities in %s seconds." % (
-        count,
-        entity_count,
-        time.time() - start
-    ))
+            count, _ = bulk(es, ops)
+            logger.info("Created %s dashboards from %s entities in %s seconds." % (
+                count,
+                entity_count,
+                time.time() - start
+            ))
+            break
+        except:
+            logger.exception("Unable to grafanize:")
 
 if __name__ == '__main__':
     try:

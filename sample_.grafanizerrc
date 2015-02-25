@@ -4,3 +4,4 @@ datasource:
   url: https://monitoring.api.rackspacecloud.com/v1.0
 pool_size: 100
 template_dir: ~/templates
+retries: 5

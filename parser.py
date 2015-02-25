@@ -13,7 +13,8 @@ def get_parser():
         ('--g-template-dir', str, 'Directory containing templates.'),
         ('--g-datasource-url', str, 'Url to pull data from.'),
         ('--g-datasource-username', str, 'username'),
-        ('--g-datasource-api-key', str, 'apikey')
+        ('--g-datasource-api-key', str, 'apikey'),
+        ('--g-retries', str, 'Number of times to retry if an error occurs.')
     ]
 
     for name, type_, help_ in config_args:

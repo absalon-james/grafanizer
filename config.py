@@ -103,7 +103,8 @@ def get_config(args=None):
     # Config from environment
     config_from_env(config, {
         'pool_size': 'G_POOL_SIZE',
-        'template_dir': 'G_TEMPLATE_DIR'
+        'template_dir': 'G_TEMPLATE_DIR',
+        'retries': 'G_RETRIES'
     })
     config_from_env(config['datasource'], {
         'username': 'G_DATASOURCE_USERNAME',
@@ -114,7 +115,8 @@ def get_config(args=None):
     # Config from args
     config_from_args(config, {
         'pool_size': 'g_pool_size',
-        'template_dir': 'g_template_dir'
+        'template_dir': 'g_template_dir',
+        'retries': 'g_retries'
     }, args)
     config_from_args(config['datasource'], {
         'username': 'g_datasource_username',
@@ -123,15 +125,17 @@ def get_config(args=None):
     }, args)
 
     if not config.get('pool_size'):
-        logger.debug("Using default of 100 for pool size")
         config['pool_size'] = 100
     if not config.get('template_dir'):
-        logger.debug("Using default of ~/templates for template_dir")
         config['template_dir'] = '~/templates'
+    if not config.get('retries'):
+        config['retries'] = 5
 
     if config.get('pool_size'):
         config['pool_size'] = int(config['pool_size'])
     if config.get('template_dir'):
         config['template_dir'] = os.path.expanduser(config['template_dir'])
+    if config.get('retries'):
+        config['retries'] = int(config['retries'])
 
     return config
