@@ -7,6 +7,7 @@ from string import Template
 import schema
 import pprint
 from models import Context
+from query import Query
 
 logger = logging.getLogger('grafanizer.template')
 
@@ -24,32 +25,7 @@ class BaseTemplate(object):
 
         """
         self.data = data
-        rm = [m.lower() for m in data.get('required-metrics', [])]
-        self.required_metrics = set(rm)
         self.ctx = Context()
-
-    def canuse(self, entity):
-        """
-        Returns whether or not an entity fits within this template.
-        Ensures that the entity has some metrics and that this template's
-        set of required metrics is a subset of the entity's metrics.
-
-        @param entity - Entity object
-        @returns - Boolean
-
-        """
-        # Check if the entity has ANY metrics.
-        if not entity.has_metrics():
-            logger.debug("Entity %s has no metrics" % entity.label)
-            return False
-
-        # Check if the entity has the required metrics
-        if not entity.has_metrics(self.required_metrics):
-            logger.debug(
-                "Entity %s does not have the required metrics" % entity.label
-            )
-            return False
-        return True
 
     def substitute(self, _str, ctx):
         """
@@ -57,7 +33,8 @@ class BaseTemplate(object):
         ctx as the mapping.
 
         @param _str - String template
-        @param ctx - Dictionary containing the mapping.
+        @param ctx - Dictionary or dictionary like object
+            containing the mapping.
         @returns - String
 
         """
@@ -65,13 +42,13 @@ class BaseTemplate(object):
             _str = Template(_str).safe_substitute(ctx)
         return _str
 
-    def clean(self, doc):
+    def finalize(self, doc):
         """
-        Cleans fields leftover from templating from the final document.
-        Removes the 'type' field.
-        Removes the 'required-metrics' field.
-        Removes all 'metrics' fields.
-
+        Performs a few post templating takes.
+        Removes the following:
+            - type field of root level document
+            - removes the metric fields from graph level documents.
+        Performs the final templating of complex multi entity metrics.
         @returns - Dictionary
 
         """
@@ -87,6 +64,8 @@ class BaseTemplate(object):
         for r in doc['dashboard'].get('rows', []):
             for p in r.get('panels', []):
                 if 'metrics' in p:
+                    for m in p['metrics']:
+                        self.post_template_metric(p, m)
                     del p['metrics']
         return doc
 
@@ -149,18 +128,120 @@ class BaseTemplate(object):
 
     def metric(self, panel, metric, entity):
         """
-        Templates a target from a metric specification if the entity
-        has the metric.
+        Branches on the type field of a metric dictionary.
 
         @param panel - Dictionary representation of the panel.
         @param metric - Dictionary representation of the metric.
         @param entity - Entity model instance.
 
         """
-        metric['name'] = metric['name'].lower()
-        if entity.has_metric(metric['name']):
-            self.ctx.add_check(entity.get_check(metric['name']))
-            target = self.substitute(metric['target'], self.ctx)
+        if metric['type'] == "simple":
+            self.simple_metric(panel, metric, entity)
+        elif metric['type'] == 'complex' and metric.get('multi-entity'):
+            self.complex_metric_multi(panel, metric, entity)
+        elif metric['type'] == 'complex':
+            self.complex_metric(panel, metric, entity)
+
+    def complex_metric(self, panel, metric, entity):
+        """
+        Complex metrics involve multiple metrics.
+        An example is one metric as a percentage of another metrics.
+        The idea is to temporarily store each individual target by a name
+        that can then be used when creating the final complex target.
+
+        @param panel - Dictionary representation of the panel
+        @param metric - Dictionary representation of the metric
+        @param entity - Entity model instance.
+
+        """
+        # Template the named targets
+        named_targets = {}
+        for name, m in metric['named-metrics'].iteritems():
+            query = Query(m['query'])
+            result = query.query(entity)
+            if not result:
+                return
+            entity, check, metric_obj = result
+            self.ctx.update(entity=entity, check=check, metric=metric_obj)
+            named_targets[name] = self.substitute(m['target'], self.ctx)
+
+        # Apply named targets to the final target
+        target = self.substitute(metric['target'], named_targets)
+
+        # Apply the context to the final target
+        target = self.substitute(target, self.ctx)
+        panel['targets'].append({'target': target})
+
+    def complex_metric_multi(self, panel, metric, entity):
+        """
+        Complex multi entity metrics involve similar metrics on multiple
+        entities.
+        An example would be taking the average response time of an api on
+        all entities that serve the api.
+
+        The targets of each entity are stored in a targets field for each
+        named metric. These can then be referenced later to create the final
+        complex target in a final pass of the document.
+
+        @param panel - Dictionary representation of the panel
+        @param metric - Dictionary representation of the metric.
+        @param entity - Entity model instance.
+
+        """
+        # Iterate over named targets. Only add to aggregation if
+        # all named targets are present
+        named_targets = {}
+        for name, m in metric['named-metrics'].iteritems():
+            query = Query(m['query'])
+            result = query.query(entity)
+            if not result:
+                return
+            entity, check, metric_obj = result
+            self.ctx.update(entity=entity, check=check, metric=metric_obj)
+            named_targets[name] = self.substitute(m['target'], self.ctx)
+
+        # We have a target for each query - save them
+        for name, t in named_targets.iteritems():
+            if not metric['named-metrics'][name].get('targets'):
+                metric['named-metrics'][name]['targets'] = []
+            metric['named-metrics'][name]['targets'].append(t)
+
+    def simple_metric(self, panel, metric, entity):
+        """
+        Generates a simple target for a simple metrics.
+
+        @param panel - Dictionary representation of a panel
+        @param metric - Dictionary representation of a metric
+        @param entity - Entity model instance
+
+        """
+        query = Query(metric['query'])
+        result = query.query(entity)
+        if not result:
+            return
+        entity, check, metric_obj = result
+        self.ctx.update(entity=entity, check=check, metric=metric_obj)
+        target = self.substitute(metric['target'], self.ctx)
+        panel['targets'].append({'target': target})
+
+    def post_template_metric(self, panel, metric):
+        """
+        Templates final results of multi entity metrics.
+        Such as in averages.
+
+        @param panel - Dictionary representation of a panel
+        @param metric - Dictionary representation of a metric
+
+        """
+        if metric['type'] == 'complex' and metric.get('multi-entity'):
+            named_ctx = {}
+            for name, m in metric['named-metrics'].iteritems():
+                # Check for empty aggregated targets. Return if even one
+                # is empty
+                if not m.get('targets'):
+                    return
+                named_ctx[name] = ','.join(m['targets'])
+            target = self.substitute(metric['target'], named_ctx)
             panel['targets'].append({'target': target})
 
 
@@ -200,39 +281,6 @@ class SingleEntityTemplate(BaseTemplate):
             ops.append(d)
         return ops
 
-    def panel_text(self, panel, entity):
-        """
-        Applies a context to the content section of a text type panel.
-
-        @param panel - Dictionary representation of a text type panel
-        @param entity - Entity model instance
-
-        """
-        super(SingleEntityTemplate, self).panel_text(panel, entity)
-        panel['content'] = self.substitute(panel['content'], self.ctx)
-
-    def panel(self, panel, entity):
-        """
-        Applies a context to the title field of a panel.
-
-        @param panel - Dictionary representation of a panel.
-        @param entity - Entity model instance.
-
-        """
-        super(SingleEntityTemplate, self).panel(panel, entity)
-        panel['title'] = self.substitute(panel['title'], self.ctx)
-
-    def row(self, row, entity):
-        """
-        Applies a context to the title field of a row.
-
-        @param row - Dictionary representation of a row.
-        @param entity - Entity model instance.
-
-        """
-        super(SingleEntityTemplate, self).row(row, entity)
-        row['title'] = self.substitute(row['title'], self.ctx)
-
     def consume(self, entity):
         """
         Templates a dashboard if the entity is usuable.
@@ -240,14 +288,17 @@ class SingleEntityTemplate(BaseTemplate):
         @param entity - Entity instance
 
         """
-        if not self.canuse(entity):
-            return
-
         # Make copy. This template can produce multiple documents.
         doc = copy.deepcopy(self.data)
 
         self.ctx = Context()
-        self.ctx.add_entity(entity)
+
+        # Iterate over rows
+        for r in doc['dashboard'].get('rows', []):
+            self.row(r, entity)
+
+        if not self.ctx.current_entity:
+            return
 
         # Apply context to ids
         id_ = doc['dashboard'].get('id')
@@ -256,25 +307,19 @@ class SingleEntityTemplate(BaseTemplate):
             doc['dashboard']['id'] = id_
             doc['_id'] = id_
 
-        # Apply context to titles
+        # Add entity label to tags
+        tags = doc.get('tags', [])
+        tags.append(self.ctx.entity_label())
+        doc['tags'] = list(set(tags))
+
+        # Apply context to title
         title = doc['dashboard'].get('title')
         if title:
             title = self.substitute(title, self.ctx)
-            doc['title'] = title
             doc['dashboard']['title'] = title
+            doc['title'] = title
 
-        # Apply context to original title
-        title = doc['dashboard'].get('originalTitle')
-        if title:
-            title = self.substitute(title, self.ctx)
-            doc['dashboard']['originalTitle'] = title
-
-        # Iterate over rows
-        for r in doc['dashboard'].get('rows', []):
-            self.row(r, entity)
-
-        doc['tags'] = list(set(doc.get('tags', []) + self.ctx.tags))
-        self.docs.append(self.clean(doc))
+        self.docs.append(doc)
 
 
 class MultiEntityTemplate(BaseTemplate):
@@ -302,16 +347,11 @@ class MultiEntityTemplate(BaseTemplate):
 
         """
         # Clean the dashboard
-        self.doc = self.clean(self.doc)
+        self.doc = self.finalize(self.doc)
 
-        title = self.doc['dashboard'].get('title')
-        if title:
-            self.doc['dashboard']['title'] = self.substitute(title, self.ctx)
-
-        title = self.doc['dashboard'].get('originalTitle')
-        if title:
-            self.doc['dashboard']['originalTitle'] = self.substitute(title,
-                                                                     self.ctx)
+        # Add tag for each entity
+        tags = self.doc.get('tags', []) + [e.label for e in self.ctx.entities]
+        self.doc['tags'] = list(set(tags))
 
         self.doc.update({
             "_op_type": "index",
@@ -319,7 +359,6 @@ class MultiEntityTemplate(BaseTemplate):
             "_type": "dashboard",
             "_id": self.doc['dashboard'].get('id'),
             "title": self.doc['dashboard']['title'],
-            "tags": list(set(self.doc.get('tags', []) + self.ctx.tags)),
             "dashboard": json.dumps(self.doc['dashboard']),
         })
         return [self.doc]
@@ -331,13 +370,6 @@ class MultiEntityTemplate(BaseTemplate):
         @param entity - Entity instance
 
         """
-        # Check if entity fits this template
-        if not self.canuse(entity):
-            logger.debug("Can't use entity: %s" % entity.label)
-            return
-
-        self.ctx.add_entity(entity)
-
         # Iterate over rows
         for r in self.doc['dashboard'].get('rows', []):
             self.row(r, entity)
@@ -384,6 +416,7 @@ def get_templates(path, file_=None):
     logger.debug("Getting templates")
     templates = []
     validate_header = "Validating %s: %s"
+    ignore = set(['entity_types', 'entity_types.json'])
 
     # If file_ alone doesn't exist, try joining it with the template path
     if file_ and not os.path.isfile(file_):
@@ -401,6 +434,10 @@ def get_templates(path, file_=None):
     for f in files:
         try:
             # Read the file
+            if os.path.basename(f) in ignore:
+                logger.debug("Ignoring %s" % f)
+                continue
+
             with open(f, 'r') as infile:
                 json_data = json.loads(infile.read())
 

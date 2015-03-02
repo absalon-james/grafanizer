@@ -1,11 +1,62 @@
+import logging
+
+logger = logging.getLogger('grafanizer.models')
+
+
+class Check(object):
+    """
+    Models a check. Differs from driver check in that metrics are fetched
+    when instance is created.
+
+    """
+    def __init__(self, driver, driver_check, entity_id):
+        """
+        Inits the check instance.
+
+        @param driver - Instance of Rackspace Cloud Monitoring Driver
+        @param driver_check - Instance of the Rackspace Cloud Monitoring
+            Check
+        @param entity_id - String id of parent entity
+
+        """
+        self.driver = driver
+        self.driver_check = driver_check
+        self.entity_id = entity_id
+        self.load_metrics()
+
+    @property
+    def id(self):
+        """
+        Returns the check id
+
+        @returns - String
+
+        """
+        return self.driver_check.id
+
+    @property
+    def label(self):
+        """
+        Returns the check label
+
+        @returns - String
+
+        """
+        return self.driver_check.label
+
+    def load_metrics(self):
+        """
+        Loads the metrics for the check.
+
+        """
+        self.metrics = \
+            [m for m in self.driver.list_metrics(self.entity_id, self.id)]
+
+
 class Entity(object):
     """
     Models an entity. Differs from the driver entity in that
-    check to metric relationships are also modeled as a graph.
-
-    Edges are strings with the content of {check.id}.{metric.name}.
-    Metrics are stored in a dictionary keyed by the edge.
-    Checks are stored in a dictionary keyed by the edge.
+    all entity checks are fetched when instance is created.
 
     """
 
@@ -20,7 +71,7 @@ class Entity(object):
         """
         self.driver = driver
         self.driver_entity = driver_entity
-        self.load_metrics()
+        self.load_checks()
 
     @property
     def id(self):
@@ -42,91 +93,116 @@ class Entity(object):
         """
         return self.driver_entity.label
 
-    def has_metric(self, metric):
+    def load_checks(self):
         """
-        Returns whether or not this entity has the specified metric.
-
-        @param metric - String should be of the format
-            {check.label}.{metric name}. Example: cpu.max_cpu_usage.
-        @returns Boolean
+        Gets all checks for this entity.
 
         """
-        return metric.lower() in self.metric_set
-
-    def has_metrics(self, metrics=None):
-        """
-        If the set of metrics is None, Returns whether or not the entity
-        has any metrics.
-
-        If the set of metrics is a set, returns wheter or not the set of
-        metrics is a subset of the entity's set of metrics.
-
-        @param metrics - Set of metric specifications.
-            Example: set(['cpu.max_cpu_usage', 'memory.total'])
-        @returns Boolean
-
-        """
-        if metrics is None:
-            return len(self.metric_set) > 0
-        return metrics.issubset(self.metric_set)
-
-    def get_check(self, metric):
-        """
-        Returns the check object in the check dict corresponding to the
-        specified metric.
-
-        @param metric - String should be of the format
-            {check.label}.{metric name}. Example: cpu.max_cpu_usage.
-        @returns - Check object
-
-        """
-        return self.check_dict.get(metric)
-
-    def load_metrics(self):
-        """
-        Gets all checks and all metrics per check for this entity.
-        Builds the graph.
-
-        """
-        # Init the relationship model
-        self.check_dict = {}
-        self.metric_set = set()
-        self.metric_dict = {}
-
-        # Iterate over checks
+        self.checks = []
         for c in self.driver.list_checks(self.driver_entity):
-            # Iterate over metrics
-            for m in self.driver.list_metrics(self.driver_entity.id, c.id):
-                edge_str = "%s.%s" % (c.label.lower(), m.name.lower())
-                self.metric_set.add(edge_str)
-                self.check_dict[edge_str] = c
-                self.metric_dict[edge_str] = m
+            self.checks.append(Check(self.driver, c, self.id))
 
 
-class Context(dict):
+class Context(object):
     """
+    Simple data structure for remembering data as a template is created.
 
     """
-    def __init__(self, *args, **kwargs):
-        super(Context, self).__init__(*args, **kwargs)
-        self.tags = []
+    def __init__(self):
+        self._valid_keys = set([
+            'entity_id', 'entity_label',
+            'check_id', 'check_label',
+            'metric_name'
+        ])
+        self.entities = set()
+        self.checks = set()
+        self.metrics = set()
+        self.current_entity = None
+        self.current_check = None
+        self.current_metric = None
 
-    def add_entity(self, entity):
-        self.tags.append(entity.label)
-        self['entity_id'] = entity.id
-        self['entity_label'] = entity.label
+    def update(self, entity=None, check=None, metric=None):
+        """
+        Updates the context.
 
-        if not self.get('entity_ids'):
-            self['entity_ids'] = entity.id
-        else:
-            self['entity_ids'] = ', '.join([self['entity_ids'], entity.id])
+        @param entity - Entity instance
+        @param check - Check instance
+        @param metric - Metric instance
 
-        if not self.get('entity_labels'):
-            self['entity_labels'] = entity.label
-        else:
-            self['entity_labels'] = ', '.join([self['entity_labels'],
-                                               entity.label])
+        """
+        if entity:
+            self.entities.add(entity)
+            self.current_entity = entity
+        if check:
+            self.checks.add(check)
+            self.current_check = check
+        if metric:
+            self.metrics.add(metric)
+            self.current_metric = metric
 
-    def add_check(self, check):
-        self['check_id'] = check.id
-        self['check_label'] = check.label
+    def entity_id(self):
+        """
+        Return current entity's id
+
+        @return - String | None
+
+        """
+        if self.current_entity:
+            return self.current_entity.id
+        return None
+
+    def entity_label(self):
+        """
+        Return the current entity's label
+
+        @return - String | None
+
+        """
+        if self.current_entity:
+            return self.current_entity.label
+        return None
+
+    def check_id(self):
+        """
+        Return the current check's id
+
+        @return - String | None
+
+        """
+        if self.current_check:
+            return self.current_check.id
+        return None
+
+    def check_label(self):
+        """
+        Return the current check's label
+
+        @return - String | None
+
+        """
+        if self.current_check:
+            return self.current_check.label
+        return None
+
+    def metric_name(self):
+        """
+        Return the current metric's name
+
+        @return - String | None
+
+        """
+        if self.current_metric:
+            return self.current_metric.name
+        return None
+
+    def __getitem__(self, key):
+        """
+        Allows the context to be passed into a python string template.
+
+        @param key - String
+        @return - String | None
+
+        """
+        if key in self._valid_keys:
+            return getattr(self, key)()
+        return None

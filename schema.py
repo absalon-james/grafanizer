@@ -1,7 +1,43 @@
+from query_dsl import validate_query
+
 metric = {
-    'name': {
-        'required': True,
-        'type': 'string'
+    'type': {
+        'type': 'string',
+        'allowed': ['simple', 'complex'],
+        'required': True
+    },
+    'query': {
+        'type': 'string',
+        'validator': validate_query,
+        'dependencies': {
+            'type': ['simple']
+        }
+    },
+    'named-metrics': {
+        'type': 'dict',
+        'keyschema': {
+            "type": "dict",
+            "schema": {
+                "query": {
+                    'type': 'string',
+                    'validator': validate_query,
+                    'required': True
+                },
+                "target": {
+                    'type': 'string',
+                    'required': True
+                }
+            }
+        },
+        'dependencies': {
+            'type': ['complex']
+        }
+    },
+    'multi-entity': {
+        'type': 'boolean',
+        'dependencies': {
+            'type': ['complex']
+        }
     },
     'target': {
         'required': True,
@@ -16,6 +52,11 @@ target = {
         'target': {
             'type': 'string',
             'required': True,
+            'nullable': False
+        },
+        'hide': {
+            'type': 'boolean',
+            'required': False,
             'nullable': False
         }
     }
@@ -71,6 +112,8 @@ grid = {
     }
 }
 
+# This is currently not used. There are more fields in play than are
+# listed here.
 legend = {
     # Show/hide legend - Defaults to true
     'show': {
@@ -175,7 +218,12 @@ panel = {
         'nullable': False
     },
 
+    'height': {},
+
     # Graph panel ############################################################
+
+    # leftYAxisLabel
+    'leftYAxisLabel': {},
 
     # Datasource - defaults to null. Uses default datasource if null
     'datasource': {
@@ -271,8 +319,7 @@ panel = {
     # Legend options
     'legend': {
         'type': 'dict',
-        'nullable': False,
-        'schema': legend
+        'nullable': False
     },
 
     # How null points are handled. Defaults to 'connected'
@@ -463,16 +510,14 @@ dashboard = {
     },
 
     # No default yet
-    'refresh': {
-        'type': 'string',
-        'required': True,
-        'nullable': True
-    },
+    'refresh': {},
 
     # Set to 0 by default
     'version': {
         'type': 'integer'
-    }
+    },
+
+    'tags': {}
 }
 
 template = {
@@ -492,9 +537,6 @@ template = {
         'type': 'dict',
         'schema': dashboard
     },
-    'required-metrics': {
-        'type': 'list'
-    },
 
     # Set to empty list by default in grafana
     'tags': {
@@ -503,4 +545,14 @@ template = {
             'type': 'string'
         }
     },
+}
+
+entity_types = {
+    'types': {
+        'type': 'dict',
+        'keyschema': {
+            'type': 'string',
+            'validator': validate_query
+        }
+    }
 }

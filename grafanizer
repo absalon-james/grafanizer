@@ -13,10 +13,11 @@ from elasticsearch.helpers import bulk
 from rackspace_monitoring.providers import get_driver
 from rackspace_monitoring.types import Provider
 
-from template import get_templates
-from models import Entity
 from config import get_config
+from models import Entity
 from parser import get_parser
+from query import load_entity_types
+from template import get_templates
 
 logger = logging.getLogger('grafanizer')
 
@@ -101,8 +102,13 @@ def grafanize():
     config = get_config(args)
 
     templates = get_templates(config['template_dir'], file_=args.file)
+    if not len(templates):
+        logger.info("No templates loaded.")
+        exit()
 
-    # End here if we are only validating
+    load_entity_types(config['template_dir'])
+
+    # End here if we are only validating or we have no templates.
     if args.validate:
         exit()
 
@@ -114,8 +120,6 @@ def grafanize():
 
             for e in entity_pile:
                 entity_count = entity_count + 1
-                if not len(e.metric_set):
-                    continue
                 for t in templates:
                     t.consume(e)
 
@@ -125,11 +129,13 @@ def grafanize():
                 ops += t.es_ops()
 
             count, _ = bulk(es, ops)
-            logger.info("Created %s dashboards from %s entities in %s seconds." % (
-                count,
-                entity_count,
-                time.time() - start
-            ))
+            logger.info(
+                "Created %s dashboards from %s entities in %s seconds." % (
+                    count,
+                    entity_count,
+                    time.time() - start
+                )
+            )
             break
         except:
             logger.exception("Unable to grafanize:")
