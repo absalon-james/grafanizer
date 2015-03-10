@@ -350,8 +350,8 @@ class MultiEntityTemplate(BaseTemplate):
         self.doc = self.finalize(self.doc)
 
         # Add tag for each entity
-        tags = self.doc.get('tags', []) + [e.label for e in self.ctx.entities]
-        self.doc['tags'] = list(set(tags))
+        #tags = self.doc.get('tags', []) + [e.label for e in self.ctx.entities]
+        #self.doc['tags'] = list(set(tags))
 
         self.doc.update({
             "_op_type": "index",

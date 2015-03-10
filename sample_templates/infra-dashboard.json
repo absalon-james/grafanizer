@@ -1,0 +1,391 @@
+{
+  "type": "SingleEntity",
+  "tags": [],
+  "user": "guest",
+  "group": "guest",
+  "dashboard": {
+  "id": "infra-dashboard-${entity_label}",
+  "title": "Infra Dashboard - ${entity_label}",
+  "originalTitle": "Infra Dashboard - ${entity_label}",
+  "tags": [],
+  "style": "dark",
+  "timezone": "browser",
+  "editable": true,
+  "hideControls": false,
+  "rows": [
+    {
+      "title": "Row1",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 12,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "scale": 1,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "annotate": {
+            "enable": false
+          },
+          "resolution": 100,
+          "lines": true,
+          "fill": 3,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": false,
+            "current": true,
+            "total": false,
+            "avg": false,
+            "rightSide": false,
+            "alignAsTable": false
+          },
+          "percentage": false,
+          "zerofill": true,
+          "nullPointMode": "null as zero",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "individual",
+            "query_as_alias": true
+          },
+          "metrics": [
+            {
+              "type": "simple",
+              "query": "entity(type:infra).check(label:startswith(cpu)).metric(name:full(usage_average))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Average CPU Usage')"
+            },
+            {
+              "type": "simple",
+              "query": "entity(type:infra).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Max CPU Usage')"
+            },
+            {
+              "type": "simple",
+              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(usage_average))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Average CPU Usage')"
+            },
+            {
+              "type": "simple",
+              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Max CPU Usage')"
+            }
+          ],
+          "targets": [],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "title": "Compute - CPU Average Usage",
+          "leftYAxisLabel": ""
+        },
+        {
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 27,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "scale": 1,
+          "y_formats": [
+            "bytes",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "annotate": {
+            "enable": false
+          },
+          "resolution": 100,
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": false,
+            "current": true,
+            "total": false,
+            "avg": false,
+            "rightSide": false,
+            "alignAsTable": false
+          },
+          "percentage": false,
+          "zerofill": true,
+          "nullPointMode": "connected",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "query_as_alias": true
+          },
+          "metrics": [
+            {
+              "type": "simple",
+              "query": "entity(type:infra).check(label:startswith(memory)).metric(name:full(actual_used))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Used')"
+            },
+            {
+              "type": "simple",
+              "query": "entity(type:infra).check(label:startswith(memory)).metric(name:full(actual_free))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Free')"
+            },
+            {
+              "type": "simple",
+              "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_used))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Used')"
+            },
+            {
+              "type": "simple",
+              "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_free))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Free')"
+            }
+          ],
+          "targets": [],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "title": "Compute - Actual Used Memory"
+        }
+      ]
+    },
+    {
+      "title": "New row",
+      "height": "250px",
+      "editable": true,
+      "collapse": false,
+      "panels": [
+        {
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 18,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "scale": 1,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": null,
+            "rightMax": null,
+            "leftMin": null,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "annotate": {
+            "enable": false
+          },
+          "resolution": 100,
+          "lines": true,
+          "fill": 1,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": true,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": true,
+            "current": true,
+            "total": false,
+            "avg": false,
+            "rightSide": false,
+            "alignAsTable": false
+          },
+          "percentage": false,
+          "zerofill": true,
+          "nullPointMode": "null as zero",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "query_as_alias": true
+          },
+          "metrics": [
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/boot')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/openstack')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/boot')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/openstack')"
+            }
+          ],
+          "targets": [],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "title": "% Disk Used"
+        }
+      ]
+    }
+  ],
+  "nav": [
+    {
+      "type": "timepicker",
+      "enable": true,
+      "status": "Stable",
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ],
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "now": true,
+      "collapse": false,
+      "notice": false
+    }
+  ],
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [],
+    "enable": true
+  },
+  "annotations": {
+    "list": [],
+    "enable": false
+  },
+  "refresh": false,
+  "version": 6
+}}

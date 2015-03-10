@@ -1,0 +1,8 @@
+{
+  "types": {
+    "compute": "entity().check(label:startswith(nova_compute_check)).metric(name:contains(nova))",
+    "infra": "entity().check(label:startswith(nova_api_local_check)).metric(name:contains(nova_api_local_response_time))",
+    "logging": "entity(label:contains(logger)).check(label:startswith(filesystem_/openstack)).metric(name:full(free))",
+    "cinder": "entity().check(label:startswith(cinder_volume_check)).metric(name:full(cinder_volume_status))"
+  }
+}
