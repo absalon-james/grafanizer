@@ -108,6 +108,7 @@ def get_config(args=None):
     })
     config_from_env(config['datasource'], {
         'username': 'G_DATASOURCE_USERNAME',
+        'tenant': 'G_DATASOURCE_TENANT',
         'api_key': 'G_DATASOURCE_API_KEY',
         'url': 'G_DATASOURCE_URL'
     })
@@ -120,6 +121,7 @@ def get_config(args=None):
     }, args)
     config_from_args(config['datasource'], {
         'username': 'g_datasource_username',
+        'tenant': 'g_datasource_tenant',
         'api_key': 'g_datasource_api_key',
         'url': 'g_datasource_url'
     }, args)

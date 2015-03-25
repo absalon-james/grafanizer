@@ -2,10 +2,11 @@
 import eventlet
 eventlet.monkey_patch()
 
+import json
 import logging
 import log
-
 import time
+import urllib2
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
@@ -20,6 +21,37 @@ from query import load_entity_types
 from template import get_templates
 
 logger = logging.getLogger('grafanizer')
+
+
+def get_token(config):
+    """
+    Gets an auth token. Usually, the rackspace monitoring driver takes
+    care of this, but there has been a bug where service catalogs have
+    not been configured correctly for some tenants and report as
+    have no endpoints.
+
+    """
+    data = {
+        'auth': {
+            'RAX-KSKEY:apiKeyCredentials': {
+                'username': config['datasource']['username'],
+                'apiKey': config['datasource']['api_key']
+            }
+        }
+    }
+
+    headers = {
+        'Content-type': 'application/json',
+        'Accept': 'application/json'
+    }
+
+    url = 'https://auth.api.rackspacecloud.com:443/v2.0/tokens'
+
+    req = urllib2.Request(url, json.dumps(data), headers)
+    resp = urllib2.urlopen(req)
+    resp = resp.read()
+    resp = json.loads(resp)
+    return resp['access']['token']['id']
 
 
 def get_instance(username, api_key, url, auth_url=None, auth_token=None):
@@ -70,15 +102,35 @@ def get_entity_pile(config):
     @return - eventlet.GreenPile
 
     """
-    driver = get_instance(config['datasource']['username'],
-                          config['datasource']['api_key'],
-                          config['datasource']['url'],
-                          None, None)
+    auth_token = None
+    api_url = None
+    try:
+        driver = get_instance(config['datasource']['username'],
+                              config['datasource']['api_key'],
+                              config['datasource']['url'],
+                              auth_url=None, auth_token=None)
+    except Exception as e:
+        # Handle bug where tenant does not have endpoints in service catalog
+        # Need to manually gather an auth token and create the api url which
+        # includes the tenant
+        if "Service catalog contains no endpoints" in e.message:
+            api_url = "%s/%s" % (
+                config['datasource']['url'],
+                config['datasource']['tenant']
+            )
+            auth_token = get_token(config)
+            driver = get_instance(None, None, api_url, auth_token=auth_token)
+        else:
+            raise
+
     driver_entities = driver.list_entities()
 
     # Save the auth token and api url for use in other driver instances
-    auth_token = driver.connection.auth_token
-    api_url = driver.connection.get_endpoint()
+    # if we do not already have them.
+    if not auth_token:
+        auth_token = driver.connection.auth_token
+    if not api_url:
+        api_url = driver.connection.get_endpoint()
 
     entity_pile = eventlet.GreenPile(config.get('pool_size'))
     for driver_entity in driver_entities:
@@ -139,6 +191,7 @@ def grafanize():
             break
         except:
             logger.exception("Unable to grafanize:")
+            time.sleep(10)
 
 if __name__ == '__main__':
     try:

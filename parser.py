@@ -14,6 +14,7 @@ def get_parser():
         ('--g-datasource-url', str, 'Url to pull data from.'),
         ('--g-datasource-username', str, 'username'),
         ('--g-datasource-api-key', str, 'apikey'),
+        ('--g-datasource-tenant', str, 'Tenant'),
         ('--g-retries', str, 'Number of times to retry if an error occurs.')
     ]
 
