@@ -346,6 +346,9 @@ class MultiEntityTemplate(BaseTemplate):
         @returns - List of dictionaries
 
         """
+        if not self.ctx.current_entity:
+            return []
+
         # Clean the dashboard
         self.doc = self.finalize(self.doc)
 
