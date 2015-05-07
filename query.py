@@ -16,6 +16,35 @@ logger = logging.getLogger('grafanizer.query')
 _QUERIES = {}
 
 
+class QueryResult(object):
+    """
+    Models a query result
+
+    """
+    def __init__(self, entity):
+        self.entity = entity
+        self.check_tuples = []
+
+    def add(self, check, metrics):
+        """
+        Adds a check and metrics pair
+
+        @param check
+        @param metrics - List of metrics
+
+        """
+        self.check_tuples.append((check, metrics))
+
+    def __iter__(self):
+        for c, metrics in self.check_tuples:
+            for m in metrics:
+                yield (self.entity, c, m)
+
+    def __nonzero__(self):
+        l = sum([len(metrics) for check, metrics in self.check_tuples])
+        return True if l > 0 else False
+
+
 class Query(object):
     """
     Models a query.
@@ -43,12 +72,10 @@ class Query(object):
         if not len(entity.checks):
             return None
 
+        result = None
         metric_qs = self.tokens[2] if len(self.tokens) >= 3 else []
         check_qs = self.tokens[1] if len(self.tokens) >= 2 else []
         entity_qs = self.tokens[0] if len(self.tokens) >= 1 else []
-
-        check = None
-        metric = None
 
         # Qualify the entity
         for e_q in entity_qs:
@@ -63,10 +90,9 @@ class Query(object):
                 if not type_query:
                     logger.warn("Couldnt find query for %s" % e_q[1])
                     return None
-                type_query_result = type_query.query(entity)
-                if not type_query_result:
+                result = type_query.query(entity)
+                if not result:
                     return None
-                _, check, metric = type_query_result
                 continue
 
             # Should be an attribute expression if not empty
@@ -78,8 +104,10 @@ class Query(object):
 
         # Return if we only have entity type qualifying statements
         # without check and metric qualifying statements.
-        if check and metric and not check_qs and not metric_qs:
-            return entity, check, metric
+        if result and not check_qs and not metric_qs:
+            return result
+        else:
+            result = QueryResult(entity)
 
         # Qualify the checks
         checks = entity.checks
@@ -93,17 +121,17 @@ class Query(object):
             return None
 
         # Qualify the metrics
-        metrics = checks[0].metrics
-        for m_q in metric_qs:
-            if not m_q:
-                continue
-            attr, func, value = m_q
-            func = getattr(self, func)
-            metrics = [m for m in metrics if func(value, getattr(m, attr))]
-        if not metrics:
-            return None
-
-        return (entity, checks[0], metrics[0])
+        for c in checks:
+            metrics = c.metrics
+            for m_q in metric_qs:
+                if not m_q:
+                    continue
+                attr, func, value = m_q
+                func = getattr(self, func)
+                metrics = [m for m in metrics if func(value, getattr(m, attr))]
+            if metrics:
+                result.add(c, metrics)
+        return result
 
     def full(self, needle, haystack):
         """

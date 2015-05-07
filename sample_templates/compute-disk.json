@@ -35,9 +35,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -88,6 +88,20 @@
                 }
               },
               "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:compute).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:compute).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
             }
           ],
           "targets": [],
@@ -111,9 +125,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -164,6 +178,20 @@
                 }
               },
               "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:compute).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:compute).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
             }
           ],
           "targets": [],
@@ -187,9 +215,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -263,9 +291,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,

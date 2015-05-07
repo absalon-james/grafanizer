@@ -4,9 +4,9 @@
   "user": "guest",
   "group": "guest",
   "dashboard": {
-  "id": "cloud-metrics-compute-cpu",
-  "title": "Cloud Metrics - Compute CPU",
-  "originalTitle": "Cloud Metrics - Compute CPU",
+  "id": "cloud-metrics-cinder-disk",
+  "title": "Cloud Metrics - Cinder Disk",
+  "originalTitle": "Cloud Metrics - Cinder Disk",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
@@ -14,7 +14,7 @@
   "hideControls": false,
   "rows": [
     {
-      "title": "Row1",
+      "title": "New row",
       "height": "400px",
       "editable": true,
       "collapse": false,
@@ -24,7 +24,7 @@
           "span": 12,
           "editable": true,
           "type": "graph",
-          "id": 12,
+          "id": 1,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -35,9 +35,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -59,75 +59,7 @@
             "show": true,
             "values": true,
             "min": false,
-            "max": false,
-            "current": true,
-            "total": false,
-            "avg": false,
-            "rightSide": true,
-            "alignAsTable": true
-          },
-          "percentage": false,
-          "zerofill": true,
-          "nullPointMode": "null as zero",
-          "steppedLine": false,
-          "tooltip": {
-            "value_type": "individual",
-            "query_as_alias": true
-          },
-          "metrics": [
-            {
-              "type": "simple",
-              "query": "entity(type:compute).check(label:startswith(cpu)).metric(name:full(usage_average))",
-              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, '${entity_label}')"
-            }
-          ],
-          "targets": [],
-          "aliasColors": {},
-          "seriesOverrides": [],
-          "title": "Compute - CPU Average Usage",
-          "leftYAxisLabel": ""
-        },
-        {
-          "error": false,
-          "span": 12,
-          "editable": true,
-          "type": "graph",
-          "id": 23,
-          "datasource": null,
-          "renderer": "flot",
-          "x-axis": true,
-          "y-axis": true,
-          "scale": 1,
-          "y_formats": [
-            "percent",
-            "short"
-          ],
-          "grid": {
-            "leftMax": null,
-            "rightMax": null,
-            "leftMin": null,
-            "rightMin": null,
-            "threshold1": null,
-            "threshold2": null,
-            "threshold1Color": "rgba(216, 200, 27, 0.27)",
-            "threshold2Color": "rgba(234, 112, 112, 0.22)"
-          },
-          "annotate": {
-            "enable": false
-          },
-          "resolution": 100,
-          "lines": true,
-          "fill": 0,
-          "linewidth": 1,
-          "points": false,
-          "pointradius": 5,
-          "bars": false,
-          "stack": false,
-          "legend": {
-            "show": true,
-            "values": true,
-            "min": false,
-            "max": false,
+            "max": true,
             "current": true,
             "total": false,
             "avg": false,
@@ -144,15 +76,114 @@
           },
           "metrics": [
             {
-              "type": "simple",
-              "query": "entity(type:compute).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
-              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, '${entity_label}')"
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Compute - Max CPU Usage"
+          "title": "% Disk Used - /"
+        },
+        {
+          "error": false,
+          "span": 12,
+          "editable": true,
+          "type": "graph",
+          "id": 4,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "scale": 1,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": 100,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "annotate": {
+            "enable": false
+          },
+          "resolution": 100,
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": true,
+            "current": true,
+            "total": false,
+            "avg": false,
+            "rightSide": true,
+            "alignAsTable": true
+          },
+          "percentage": false,
+          "zerofill": true,
+          "nullPointMode": "null as zero",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "query_as_alias": true
+          },
+          "metrics": [
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
+            }
+          ],
+          "targets": [],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "title": "% Disk Used - /boot"
         }
       ]
     }

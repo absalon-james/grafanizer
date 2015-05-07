@@ -4,9 +4,9 @@
   "user": "guest",
   "group": "guest",
   "dashboard": {
-  "id": "logging-dashboard-${entity_label}",
-  "title": "Logging Dashboard - ${entity_label}",
-  "originalTitle": "Logging Dashboard - ${entity_label}",
+  "id": "cinder-dashboard-${entity_label}",
+  "title": "Cinder Dashboard - ${entity_label}",
+  "originalTitle": "Cinder Dashboard - ${entity_label}",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
@@ -77,19 +77,19 @@
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(usage_average))",
+              "query": "entity(type:cinder).check(label:startswith(cpu)).metric(name:full(usage_average))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Average CPU Usage')"
             },
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
+              "query": "entity(type:cinder).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Max CPU Usage')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Logging - CPU",
+          "title": "Cinder - CPU",
           "leftYAxisLabel": ""
         },
         {
@@ -150,19 +150,19 @@
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_used))",
+              "query": "entity(type:cinder).check(label:startswith(memory)).metric(name:full(actual_used))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Used')"
             },
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_free))",
+              "query": "entity(type:cinder).check(label:startswith(memory)).metric(name:full(actual_free))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Free')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Logging - Memory"
+          "title": "Cinder - Memory"
         }
       ]
     },
@@ -174,7 +174,7 @@
       "panels": [
         {
           "error": false,
-          "span": 12,
+          "span": 6,
           "editable": true,
           "type": "graph",
           "id": 18,
@@ -232,11 +232,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -246,11 +246,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -260,25 +260,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "query": "entity(type:cinder).check(label:startswith(filesystem--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
-                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
-                }
-              },
-              "target": "alias(asPercent(${used}, ${total}), '/openstack')"
-            },
-            {
-              "type": "complex",
-              "named-metrics": {
-                "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(total))",
-                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
-                },
-                "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "query": "entity(type:cinder).check(label:startswith(filesystem--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -288,7 +274,74 @@
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Logging - % Disk Used"
+          "title": "Cinder - % Disk Used"
+        },
+        {
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "graph",
+          "id": 19,
+          "datasource": null,
+          "renderer": "flot",
+          "x-axis": true,
+          "y-axis": true,
+          "scale": 1,
+          "y_formats": [
+            "percent",
+            "short"
+          ],
+          "grid": {
+            "leftMax": 100,
+            "rightMax": null,
+            "leftMin": 0,
+            "rightMin": null,
+            "threshold1": null,
+            "threshold2": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "annotate": {
+            "enable": false
+          },
+          "resolution": 100,
+          "lines": true,
+          "fill": 0,
+          "linewidth": 1,
+          "points": false,
+          "pointradius": 5,
+          "bars": false,
+          "stack": false,
+          "legend": {
+            "show": true,
+            "values": true,
+            "min": false,
+            "max": true,
+            "current": true,
+            "total": false,
+            "avg": false,
+            "rightSide": false,
+            "alignAsTable": false
+          },
+          "percentage": false,
+          "zerofill": true,
+          "nullPointMode": "null as zero",
+          "steppedLine": false,
+          "tooltip": {
+            "value_type": "cumulative",
+            "query_as_alias": true
+          },
+          "metrics": [
+            {
+              "type": "simple",
+              "query": "entity(type:cinder).check(label:startswith(disk_utilisation)).metric(name:startswith(disk_utilisation))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}, '${metric_name}')"
+            }
+          ],
+          "targets": [],
+          "aliasColors": {},
+          "seriesOverrides": [],
+          "title": "Cinder - % Disk Utilization"
         }
       ]
     }

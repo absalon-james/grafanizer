@@ -4,9 +4,9 @@
   "user": "guest",
   "group": "guest",
   "dashboard": {
-  "id": "cloud-metrics-compute-cpu",
-  "title": "Cloud Metrics - Compute CPU",
-  "originalTitle": "Cloud Metrics - Compute CPU",
+  "id": "cloud-metrics-swift-proxy-cpu",
+  "title": "Cloud Metrics - Swift Proxy CPU",
+  "originalTitle": "Cloud Metrics - Swift Proxy CPU",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
@@ -77,14 +77,14 @@
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:compute).check(label:startswith(cpu)).metric(name:full(usage_average))",
+              "query": "entity(type:swift-proxy).check(label:startswith(cpu)).metric(name:full(usage_average))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, '${entity_label}')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Compute - CPU Average Usage",
+          "title": "Swift Proxy - CPU Average Usage",
           "leftYAxisLabel": ""
         },
         {
@@ -145,14 +145,14 @@
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:compute).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
+              "query": "entity(type:swift-proxy).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, '${entity_label}')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Compute - Max CPU Usage"
+          "title": "Swift Proxy - Max CPU Usage"
         }
       ]
     }

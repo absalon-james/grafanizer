@@ -119,11 +119,11 @@
           },
           "resolution": 100,
           "lines": true,
-          "fill": 1,
+          "fill": 0,
           "linewidth": 1,
           "points": false,
           "pointradius": 5,
-          "bars": true,
+          "bars": false,
           "stack": false,
           "legend": {
             "show": true,
@@ -258,9 +258,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -348,9 +348,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -406,11 +406,39 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
                   "query": "entity(type:infra).check(label:startswith(filesystem_/--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
                   "query": "entity(type:infra).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '${entity_label}')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -438,9 +466,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -798,6 +826,61 @@
                 }
               },
               "target": "alias(averageSeries(${average}), 'Neutron API Response Time')"
+            },
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "average": {
+                  "query": "entity(type:infra).check(label:startswith(heat_cw_api_check)).metric(name:full(heat_cw_api_local_response_time))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(averageSeries(${average}), 'Heat CW API Response Time')"
+            },
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "average": {
+                  "query": "entity(type:infra).check(label:startswith(heat_cfn_api_check)).metric(name:full(heat_cfn_api_local_response_time))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(averageSeries(${average}), 'Heat CFN API Response Time')"
+            },
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "average": {
+                  "query": "entity(type:infra).check(label:startswith(heat_api_local_check)).metric(name:full(heat_api_local_response_time))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(averageSeries(${average}), 'Heat API Response Time')"
+            },
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "average": {
+                  "query": "entity(type:infra).check(label:startswith(cinder_api_local_check)).metric(name:full(cinder_api_local_response_time))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(averageSeries(${average}), 'Cinder API Response Time')"
+            },
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "average": {
+                  "query": "entity().check(label:startswith(swift_proxy_server_check)).metric(name:full(swift_proxy_server_api_local_response_time))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(averageSeries(${average}), 'Swift API Response Time')"
             }
           ],
           "targets": [],

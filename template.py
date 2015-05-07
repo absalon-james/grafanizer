@@ -161,9 +161,9 @@ class BaseTemplate(object):
             result = query.query(entity)
             if not result:
                 return
-            entity, check, metric_obj = result
-            self.ctx.update(entity=entity, check=check, metric=metric_obj)
-            named_targets[name] = self.substitute(m['target'], self.ctx)
+            for entity, check, metric_obj in result:
+                self.ctx.update(entity=entity, check=check, metric=metric_obj)
+                named_targets[name] = self.substitute(m['target'], self.ctx)
 
         # Apply named targets to the final target
         target = self.substitute(metric['target'], named_targets)
@@ -196,9 +196,9 @@ class BaseTemplate(object):
             result = query.query(entity)
             if not result:
                 return
-            entity, check, metric_obj = result
-            self.ctx.update(entity=entity, check=check, metric=metric_obj)
-            named_targets[name] = self.substitute(m['target'], self.ctx)
+            for entity, check, metric_obj in result:
+                self.ctx.update(entity=entity, check=check, metric=metric_obj)
+                named_targets[name] = self.substitute(m['target'], self.ctx)
 
         # We have a target for each query - save them
         for name, t in named_targets.iteritems():
@@ -219,10 +219,10 @@ class BaseTemplate(object):
         result = query.query(entity)
         if not result:
             return
-        entity, check, metric_obj = result
-        self.ctx.update(entity=entity, check=check, metric=metric_obj)
-        target = self.substitute(metric['target'], self.ctx)
-        panel['targets'].append({'target': target})
+        for entity, check, metric_obj in result:
+            self.ctx.update(entity=entity, check=check, metric=metric_obj)
+            target = self.substitute(metric['target'], self.ctx)
+            panel['targets'].append({'target': target})
 
     def post_template_metric(self, panel, metric):
         """
@@ -353,8 +353,9 @@ class MultiEntityTemplate(BaseTemplate):
         self.doc = self.finalize(self.doc)
 
         # Add tag for each entity
-        #tags = self.doc.get('tags', []) + [e.label for e in self.ctx.entities]
-        #self.doc['tags'] = list(set(tags))
+        # tags = self.doc.get('tags', []) +
+        #   [e.label for e in self.ctx.entities]
+        # self.doc['tags'] = list(set(tags))
 
         self.doc.update({
             "_op_type": "index",

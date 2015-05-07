@@ -49,7 +49,7 @@
           },
           "resolution": 100,
           "lines": true,
-          "fill": 3,
+          "fill": 0,
           "linewidth": 1,
           "points": false,
           "pointradius": 5,
@@ -89,7 +89,7 @@
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Compute - CPU Average Usage",
+          "title": "Infra - CPU",
           "leftYAxisLabel": ""
         },
         {
@@ -162,7 +162,7 @@
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Compute - Actual Used Memory"
+          "title": "Infra - Memory"
         }
       ]
     },
@@ -188,9 +188,9 @@
             "short"
           ],
           "grid": {
-            "leftMax": null,
+            "leftMax": 100,
             "rightMax": null,
-            "leftMin": null,
+            "leftMin": 0,
             "rightMin": null,
             "threshold1": null,
             "threshold2": null,
@@ -269,12 +269,26 @@
                 }
               },
               "target": "alias(asPercent(${used}, ${total}), '/openstack')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "% Disk Used"
+          "title": "Infra - % Disk Used"
         }
       ]
     }

@@ -4,9 +4,9 @@
   "user": "guest",
   "group": "guest",
   "dashboard": {
-  "id": "logging-dashboard-${entity_label}",
-  "title": "Logging Dashboard - ${entity_label}",
-  "originalTitle": "Logging Dashboard - ${entity_label}",
+  "id": "swift-proxy-dashboard-${entity_label}",
+  "title": "Swift Proxy Dashboard - ${entity_label}",
+  "originalTitle": "Swift Proxy Dashboard - ${entity_label}",
   "tags": [],
   "style": "dark",
   "timezone": "browser",
@@ -77,19 +77,19 @@
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(usage_average))",
+              "query": "entity(type:swift-proxy).check(label:startswith(cpu)).metric(name:full(usage_average))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Average CPU Usage')"
             },
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
+              "query": "entity(type:swift-proxy).check(label:startswith(cpu)).metric(name:full(max_cpu_usage))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, 'Max CPU Usage')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Logging - CPU",
+          "title": "Swift Proxy - CPU",
           "leftYAxisLabel": ""
         },
         {
@@ -150,19 +150,19 @@
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_used))",
+              "query": "entity(type:swift-proxy).check(label:startswith(memory)).metric(name:full(actual_used))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Used')"
             },
             {
               "type": "simple",
-              "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_free))",
+              "query": "entity(type:swift-proxy).check(label:startswith(memory)).metric(name:full(actual_free))",
               "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}, 'Actual Free')"
             }
           ],
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Logging - Memory"
+          "title": "Swift Proxy - Memory"
         }
       ]
     },
@@ -232,11 +232,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -246,11 +246,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem_/--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem_/--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -260,11 +260,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -274,11 +274,11 @@
               "type": "complex",
               "named-metrics": {
                 "total": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem--)).metric(name:full(total))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 },
                 "used": {
-                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "query": "entity(type:swift-proxy).check(label:startswith(filesystem--)).metric(name:full(used))",
                   "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
                 }
               },
@@ -288,7 +288,7 @@
           "targets": [],
           "aliasColors": {},
           "seriesOverrides": [],
-          "title": "Logging - % Disk Used"
+          "title": "Swift Proxy - % Disk Capacity"
         }
       ]
     }

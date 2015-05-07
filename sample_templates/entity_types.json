@@ -3,6 +3,8 @@
     "compute": "entity().check(label:startswith(nova_compute_check)).metric(name:contains(nova))",
     "infra": "entity().check(label:startswith(nova_api_local_check)).metric(name:contains(nova_api_local_response_time))",
     "logging": "entity(label:contains(log)).check(label:startswith(filesystem_/openstack)).metric(name:full(free))",
-    "cinder": "entity().check(label:startswith(cinder_volume_check)).metric(name:full(cinder_volume_status))"
+    "cinder": "entity().check(label:startswith(cinder_volume_check)).metric(name:full(cinder-volume_status))",
+    "swift-object": "entity().check(label:startswith(swift_object_server_check)).metric(name:full(swift_object_server_api_local_response_time))",
+    "swift-proxy": "entity().check(label:startswith(swift_proxy_server_check)).metric(name:full(swift_proxy_server_api_local_status))"
   }
 }
