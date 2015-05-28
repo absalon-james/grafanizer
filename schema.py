@@ -42,6 +42,33 @@ metric = {
     'target': {
         'required': True,
         'type': 'string'
+    },
+    'threshold': {
+        'type': 'float'
+    },
+    'op': {
+        'type': 'string',
+        'allowed': ['gte', 'lte']
+    }
+}
+
+warning = {
+    'id': {
+        'type': 'integer',
+        'required': True
+    },
+    'threshold': {
+        'type': 'number',
+        'required': True,
+    },
+    'op': {
+        'type': 'string',
+        'allowed': ['gte', 'lte'],
+        'required': True,
+    },
+    'target': {
+        'type': 'string',
+        'required': True
     }
 }
 
@@ -175,7 +202,7 @@ panel = {
     # Type of panel. either text or graph
     'type': {
         'type': 'string',
-        'allowed': ['graph', 'text'],
+        'allowed': ['graph', 'text', 'warning'],
         'required': True
     },
 
@@ -393,7 +420,30 @@ panel = {
     'zerofill': {
         'type': 'boolean',
         'nullable': False
-    }
+    },
+
+    # Warning panel ##########################################################
+
+    'counter': {
+        'type': 'integer',
+        'nullable': False
+    },
+
+    'timeProximityDays': {
+        'type': 'integer',
+        'nullable': False
+    },
+
+    # Warnings - Only used with custom warning grafana plugin
+    'warnings': {
+        'type': 'list',
+        'nullable': False,
+        'schema': {
+            'type': 'dict',
+            'nullable': False,
+            'schema': warning
+        }
+    },
 }
 
 row = {

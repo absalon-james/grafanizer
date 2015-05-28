@@ -14,7 +14,7 @@
   "hideControls": false,
   "rows": [
     {
-      "title": "Row1",
+      "title": "Swift Object CPU Usage - Max and Average",
       "height": "400px",
       "editable": true,
       "collapse": false,
@@ -68,7 +68,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "individual",
@@ -136,7 +136,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",

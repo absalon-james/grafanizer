@@ -14,7 +14,7 @@
   "hideControls": false,
   "rows": [
     {
-      "title": "Row1",
+      "title": "Cinder - CPU and Memory",
       "height": "250px",
       "editable": true,
       "collapse": false,
@@ -24,7 +24,7 @@
           "span": 6,
           "editable": true,
           "type": "graph",
-          "id": 12,
+          "id": 1,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -68,7 +68,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "individual",
@@ -97,7 +97,7 @@
           "span": 6,
           "editable": true,
           "type": "graph",
-          "id": 27,
+          "id": 2,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -167,7 +167,7 @@
       ]
     },
     {
-      "title": "New row",
+      "title": "Cinder - Disk Usage and Warnings",
       "height": "250px",
       "editable": true,
       "collapse": false,
@@ -177,7 +177,7 @@
           "span": 6,
           "editable": true,
           "type": "graph",
-          "id": 18,
+          "id": 3,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -221,7 +221,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -269,6 +269,20 @@
                 }
               },
               "target": "alias(asPercent(${used}, ${total}), '/')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/openstack)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/openstack)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '/openstack')"
             }
           ],
           "targets": [],
@@ -280,68 +294,103 @@
           "error": false,
           "span": 6,
           "editable": true,
-          "type": "graph",
-          "id": 19,
-          "datasource": null,
-          "renderer": "flot",
-          "x-axis": true,
-          "y-axis": true,
-          "scale": 1,
-          "y_formats": [
-            "percent",
-            "short"
-          ],
-          "grid": {
-            "leftMax": 100,
-            "rightMax": null,
-            "leftMin": 0,
-            "rightMin": null,
-            "threshold1": null,
-            "threshold2": null,
-            "threshold1Color": "rgba(216, 200, 27, 0.27)",
-            "threshold2Color": "rgba(234, 112, 112, 0.22)"
-          },
-          "annotate": {
-            "enable": false
-          },
-          "resolution": 100,
-          "lines": true,
-          "fill": 0,
-          "linewidth": 1,
-          "points": false,
-          "pointradius": 5,
-          "bars": false,
-          "stack": false,
-          "legend": {
-            "show": true,
-            "values": true,
-            "min": false,
-            "max": true,
-            "current": true,
-            "total": false,
-            "avg": false,
-            "rightSide": false,
-            "alignAsTable": false
-          },
-          "percentage": false,
-          "zerofill": true,
-          "nullPointMode": "null as zero",
-          "steppedLine": false,
-          "tooltip": {
-            "value_type": "cumulative",
-            "query_as_alias": true
-          },
+          "type": "warning",
+          "id": 4,
+          "counter": 0,
+          "datasource": "graphite",
+          "style": {},
           "metrics": [
             {
               "type": "simple",
-              "query": "entity(type:cinder).check(label:startswith(disk_utilisation)).metric(name:startswith(disk_utilisation))",
-              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.plugin.${check_id}.${metric_name}, '${metric_name}')"
+              "op": "lte",
+              "threshold": 10,
+              "query": "entity(type:cinder).check(label:startswith(cpu)).metric(name:full(idle_percent_average))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, '% CPU Idle > 10%')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(memory)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(memory)).metric(name:full(actual_used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Memory Used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk \"/boot\" used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk \"/\" used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk \"/openstack\" used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:cinder).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk \"/\" used < 95%')",
+              "op": "gte",
+              "threshold": 95
             }
           ],
-          "targets": [],
-          "aliasColors": {},
-          "seriesOverrides": [],
-          "title": "Cinder - % Disk Utilization"
+          "warnings": [],
+          "timeProximityDays": 60,
+          "title": "Warnings"
         }
       ]
     }
