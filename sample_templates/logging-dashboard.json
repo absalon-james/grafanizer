@@ -68,7 +68,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "individual",
@@ -174,7 +174,7 @@
       "panels": [
         {
           "error": false,
-          "span": 12,
+          "span": 6,
           "editable": true,
           "type": "graph",
           "id": 18,
@@ -221,7 +221,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -289,6 +289,108 @@
           "aliasColors": {},
           "seriesOverrides": [],
           "title": "Logging - % Disk Used"
+        },
+        {
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "warning",
+          "id": 19,
+          "counter": 0,
+          "datasource": "graphite",
+          "style": {},
+          "metrics": [
+            {
+              "type": "simple",
+              "op": "lte",
+              "threshold": 10,
+              "query": "entity(type:logging).check(label:startswith(cpu)).metric(name:full(idle_percent_average))",
+              "target": "alias(rackspace.monitoring.entities.${entity_id}.checks.agent.cpu.${check_id}.${metric_name}, '% CPU Idle > 10%')"
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(memory)).metric(name:full(actual_used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Memory Used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/boot--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk /boot used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk / used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem_/openstack--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk /openstack used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:logging).check(label:startswith(filesystem--)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(${used}, ${total}), '% Disk / used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            }
+          ],
+          "warnings": [],
+          "timeProximityDays": 60,
+          "title": "Warnings"
         }
       ]
     }

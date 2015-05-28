@@ -24,7 +24,7 @@
           "span": 6,
           "editable": true,
           "type": "graph",
-          "id": 29,
+          "id": 1,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -94,7 +94,7 @@
           "span": 6,
           "editable": true,
           "type": "graph",
-          "id": 30,
+          "id": 2,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -138,7 +138,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -174,7 +174,7 @@
           "span": 12,
           "editable": true,
           "type": "graph",
-          "id": 10,
+          "id": 3,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -247,7 +247,7 @@
           "span": 4,
           "editable": true,
           "type": "graph",
-          "id": 18,
+          "id": 4,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -291,7 +291,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -337,7 +337,7 @@
           "span": 4,
           "editable": true,
           "type": "graph",
-          "id": 19,
+          "id": 5,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -381,7 +381,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -455,7 +455,7 @@
           "span": 4,
           "editable": true,
           "type": "graph",
-          "id": 20,
+          "id": 6,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -499,7 +499,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -550,10 +550,10 @@
       "panels": [
         {
           "error": false,
-          "span": 6,
+          "span": 4,
           "editable": true,
           "type": "graph",
-          "id": 26,
+          "id": 7,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -638,10 +638,10 @@
         },
         {
           "error": false,
-          "span": 6,
+          "span": 4,
           "editable": true,
           "type": "graph",
-          "id": 13,
+          "id": 8,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
@@ -718,6 +718,55 @@
           "seriesOverrides": [],
           "title": "Processor Status",
           "leftYAxisLabel": "Boolean Value 1=OK 0=Failure"
+        },
+        {
+          "error": false,
+          "span": 4,
+          "editable": true,
+          "type": "warning",
+          "id": 9,
+          "counter": 0,
+          "datasource": "graphite",
+          "style": {},
+          "metrics": [
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(memory)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(memory)).metric(name:full(actual_used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(sumSeries(${used}), sumSeries(${total})), 'Infra - % Total Memory Used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            },
+            {
+              "type": "complex",
+              "multi-entity": true,
+              "named-metrics": {
+                "total": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem)).metric(name:full(total))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                },
+                "used": {
+                  "query": "entity(type:infra).check(label:startswith(filesystem)).metric(name:full(used))",
+                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
+                }
+              },
+              "target": "alias(asPercent(sumSeries(${used}), sumSeries(${total})), 'Infra - % Total Disk Used < 95%')",
+              "op": "gte",
+              "threshold": 95
+            }
+          ],
+          "warnings": [],
+          "timeProximityDays": 60,
+          "title": "Infra - Warnings"
         }
       ]
     },
@@ -732,14 +781,14 @@
           "span": 12,
           "editable": true,
           "type": "graph",
-          "id": 11,
+          "id": 10,
           "datasource": null,
           "renderer": "flot",
           "x-axis": true,
           "y-axis": true,
           "scale": 1,
           "y_formats": [
-            "µs",
+            "ms",
             "short"
           ],
           "grid": {
@@ -776,7 +825,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null as zero",
+          "nullPointMode": "null",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",

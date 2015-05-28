@@ -42,6 +42,39 @@ class BaseTemplate(object):
             _str = Template(_str).safe_substitute(ctx)
         return _str
 
+    def add_metric(self, panel, metric, ctx=None, target=None):
+        """
+        Adds a metric to the panel.
+
+        @param panel - Dictionary panel representation
+        @param metric - Dictionary metric representation
+        @param ctx - Dictionary or dictionary like object
+            containing the mapping. If none, self.ctx will be used
+        @param target - Optional target. If none, the metric target
+            will be used
+
+        """
+        panel_type = panel.get('type')
+
+        if target is None:
+            target = metric['target']
+        if ctx is None:
+            ctx = self.ctx
+
+        obj = {'target': self.substitute(target, ctx)}
+
+        # Add to graph
+        if panel_type == 'graph':
+            panel['targets'].append(obj)
+
+        # Else add to warnings
+        elif panel_type == 'warning':
+            obj['op'] = metric.get('op', '')
+            obj['threshold'] = metric.get('threshold')
+            obj['id'] = panel.get('counter', 0)
+            panel['counter'] = panel.get('counter', 0) + 1
+            panel['warnings'].append(obj)
+
     def finalize(self, doc):
         """
         Performs a few post templating takes.
@@ -112,6 +145,22 @@ class BaseTemplate(object):
         for m in panel.get('metrics', []):
             self.metric(panel, m, entity)
 
+    def panel_warning(self, panel, entity):
+        """
+        Handles templating of a warning type panel.
+
+        @param panel - Dictionary panel representation
+        @param entity - Entity model instance
+
+        """
+        # Init warnings to empty list if not set
+        if panel.get('metrics', []) and 'warnings' not in panel:
+            panel['warnings'] = []
+
+        # Iterate over metrics
+        for m in panel.get('metrics', []):
+            self.metric(panel, m, entity)
+
     def panel(self, panel, entity):
         """
         Handles templating of a panel.
@@ -121,10 +170,13 @@ class BaseTemplate(object):
         @param entity - Entity model instance
 
         """
-        if panel.get('type') == 'text':
+        _type = panel.get('type')
+        if _type == 'text':
             self.panel_text(panel, entity)
-        elif panel.get('type') == 'graph':
+        elif _type == 'graph':
             self.panel_graph(panel, entity)
+        elif _type == 'warning':
+            self.panel_warning(panel, entity)
 
     def metric(self, panel, metric, entity):
         """
@@ -163,14 +215,19 @@ class BaseTemplate(object):
                 return
             for entity, check, metric_obj in result:
                 self.ctx.update(entity=entity, check=check, metric=metric_obj)
-                named_targets[name] = self.substitute(m['target'], self.ctx)
+                if not name in named_targets:
+                    named_targets[name] = []
+                named_targets[name] \
+                    .append(self.substitute(m['target'], self.ctx))
+
+        for name, targets in named_targets.iteritems():
+            named_targets[name] = ','.join(targets)
 
         # Apply named targets to the final target
         target = self.substitute(metric['target'], named_targets)
 
         # Apply the context to the final target
-        target = self.substitute(target, self.ctx)
-        panel['targets'].append({'target': target})
+        self.add_metric(panel, metric, target=target)
 
     def complex_metric_multi(self, panel, metric, entity):
         """
@@ -198,13 +255,16 @@ class BaseTemplate(object):
                 return
             for entity, check, metric_obj in result:
                 self.ctx.update(entity=entity, check=check, metric=metric_obj)
-                named_targets[name] = self.substitute(m['target'], self.ctx)
+                if name not in named_targets:
+                    named_targets[name] = []
+                named_targets[name] \
+                    .append(self.substitute(m['target'], self.ctx))
 
         # We have a target for each query - save them
-        for name, t in named_targets.iteritems():
+        for name, targets in named_targets.iteritems():
             if not metric['named-metrics'][name].get('targets'):
                 metric['named-metrics'][name]['targets'] = []
-            metric['named-metrics'][name]['targets'].append(t)
+            metric['named-metrics'][name]['targets'] += targets
 
     def simple_metric(self, panel, metric, entity):
         """
@@ -221,8 +281,7 @@ class BaseTemplate(object):
             return
         for entity, check, metric_obj in result:
             self.ctx.update(entity=entity, check=check, metric=metric_obj)
-            target = self.substitute(metric['target'], self.ctx)
-            panel['targets'].append({'target': target})
+            self.add_metric(panel, metric)
 
     def post_template_metric(self, panel, metric):
         """
@@ -241,8 +300,7 @@ class BaseTemplate(object):
                 if not m.get('targets'):
                     return
                 named_ctx[name] = ','.join(m['targets'])
-            target = self.substitute(metric['target'], named_ctx)
-            panel['targets'].append({'target': target})
+            self.add_metric(panel, metric, ctx=named_ctx)
 
 
 class SingleEntityTemplate(BaseTemplate):
