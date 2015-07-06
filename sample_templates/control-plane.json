@@ -550,7 +550,7 @@
       "panels": [
         {
           "error": false,
-          "span": 4,
+          "span": 6,
           "editable": true,
           "type": "graph",
           "id": 7,
@@ -597,7 +597,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
@@ -638,7 +638,7 @@
         },
         {
           "error": false,
-          "span": 4,
+          "span": 6,
           "editable": true,
           "type": "graph",
           "id": 8,
@@ -718,55 +718,6 @@
           "seriesOverrides": [],
           "title": "Processor Status",
           "leftYAxisLabel": "Boolean Value 1=OK 0=Failure"
-        },
-        {
-          "error": false,
-          "span": 4,
-          "editable": true,
-          "type": "warning",
-          "id": 9,
-          "counter": 0,
-          "datasource": "graphite",
-          "style": {},
-          "metrics": [
-            {
-              "type": "complex",
-              "multi-entity": true,
-              "named-metrics": {
-                "total": {
-                  "query": "entity(type:infra).check(label:startswith(memory)).metric(name:full(total))",
-                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
-                },
-                "used": {
-                  "query": "entity(type:infra).check(label:startswith(memory)).metric(name:full(actual_used))",
-                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.memory.${check_id}.${metric_name}"
-                }
-              },
-              "target": "alias(asPercent(sumSeries(${used}), sumSeries(${total})), 'Infra - % Total Memory Used < 95%')",
-              "op": "gte",
-              "threshold": 95
-            },
-            {
-              "type": "complex",
-              "multi-entity": true,
-              "named-metrics": {
-                "total": {
-                  "query": "entity(type:infra).check(label:startswith(filesystem)).metric(name:full(total))",
-                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
-                },
-                "used": {
-                  "query": "entity(type:infra).check(label:startswith(filesystem)).metric(name:full(used))",
-                  "target": "rackspace.monitoring.entities.${entity_id}.checks.agent.filesystem.${check_id}.${metric_name}"
-                }
-              },
-              "target": "alias(asPercent(sumSeries(${used}), sumSeries(${total})), 'Infra - % Total Disk Used < 95%')",
-              "op": "gte",
-              "threshold": 95
-            }
-          ],
-          "warnings": [],
-          "timeProximityDays": 60,
-          "title": "Infra - Warnings"
         }
       ]
     },
@@ -825,7 +776,7 @@
           },
           "percentage": false,
           "zerofill": true,
-          "nullPointMode": "null",
+          "nullPointMode": "connected",
           "steppedLine": false,
           "tooltip": {
             "value_type": "cumulative",
