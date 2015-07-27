@@ -126,7 +126,7 @@
           ],
           "warnings": [],
           "timeProximityDays": 60,
-          "title": "Warnings for Disk '/openstack'"
+          "title": "Warnings for Disk '/boot'"
         }
       ]
     },
