@@ -8,7 +8,7 @@
   "title": "Swift Proxy Dashboard - ${entity_label}",
   "originalTitle": "Swift Proxy Dashboard - ${entity_label}",
   "tags": [],
-  "style": "dark",
+  "style": "light",
   "timezone": "browser",
   "editable": true,
   "hideControls": false,
