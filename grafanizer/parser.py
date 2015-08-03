@@ -15,7 +15,8 @@ def get_parser():
         ('--g-datasource-username', str, 'username'),
         ('--g-datasource-api-key', str, 'apikey'),
         ('--g-datasource-tenant', str, 'Tenant'),
-        ('--g-retries', str, 'Number of times to retry if an error occurs.')
+        ('--g-retries', int, 'Times to retry if an error occurs.'),
+        ('--g-retry-interval', int, 'Seconds to wait before each retry')
     ]
 
     for name, type_, help_ in config_args:

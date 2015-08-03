@@ -104,7 +104,8 @@ def get_config(args=None):
     config_from_env(config, {
         'pool_size': 'G_POOL_SIZE',
         'template_dir': 'G_TEMPLATE_DIR',
-        'retries': 'G_RETRIES'
+        'retries': 'G_RETRIES',
+        'retry_interval': 'G_RETRY_INTERVAL'
     })
     config_from_env(config['datasource'], {
         'username': 'G_DATASOURCE_USERNAME',
@@ -117,7 +118,8 @@ def get_config(args=None):
     config_from_args(config, {
         'pool_size': 'g_pool_size',
         'template_dir': 'g_template_dir',
-        'retries': 'g_retries'
+        'retries': 'g_retries',
+        'retry_interval': 'g_retry_interval'
     }, args)
     config_from_args(config['datasource'], {
         'username': 'g_datasource_username',
@@ -126,18 +128,27 @@ def get_config(args=None):
         'url': 'g_datasource_url'
     }, args)
 
-    if not config.get('pool_size'):
-        config['pool_size'] = 100
-    if not config.get('template_dir'):
-        config['template_dir'] = '~/templates'
-    if not config.get('retries'):
-        config['retries'] = 5
+    # Set defaults
+    defaults = [
+        ('pool_size', 100),
+        ('template_dir', '~/templates'),
+        ('retries', 5),
+        ('retry_interval',  180),
+        ('api_limit_rate_tokens', 200),
+        ('api_limit_rate_seconds', 60)
+    ]
+    for d in defaults:
+        if not config.get(d[0]):
+            config[d[0]] = d[1]
 
+    # Sanitize
     if config.get('pool_size'):
         config['pool_size'] = int(config['pool_size'])
     if config.get('template_dir'):
         config['template_dir'] = os.path.expanduser(config['template_dir'])
     if config.get('retries'):
         config['retries'] = int(config['retries'])
+    if config.get('retry_interval'):
+        config['retry_interval'] = int(config['retry_interval'])
 
     return config

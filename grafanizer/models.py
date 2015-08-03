@@ -1,4 +1,5 @@
 import logging
+import limiters
 
 logger = logging.getLogger('grafanizer.models')
 
@@ -49,6 +50,7 @@ class Check(object):
         Loads the metrics for the check.
 
         """
+        limiters.get_limiter('api').get_token()
         self.metrics = \
             [m for m in self.driver.list_metrics(self.entity_id, self.id)]
 
@@ -99,6 +101,7 @@ class Entity(object):
 
         """
         self.checks = []
+        limiters.get_limiter('api').get_token()
         for c in self.driver.list_checks(self.driver_entity):
             self.checks.append(Check(self.driver, c, self.id))
 

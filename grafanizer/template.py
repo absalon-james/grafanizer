@@ -215,7 +215,7 @@ class BaseTemplate(object):
                 return
             for entity, check, metric_obj in result:
                 self.ctx.update(entity=entity, check=check, metric=metric_obj)
-                if not name in named_targets:
+                if name not in named_targets:
                     named_targets[name] = []
                 named_targets[name] \
                     .append(self.substitute(m['target'], self.ctx))
