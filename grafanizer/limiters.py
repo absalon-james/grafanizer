@@ -42,7 +42,6 @@ class TokenBucket(object):
             time.sleep(1 / self.fill_rate)
         self._tokens -= 1
         self.token_count += 1
-        logger.info("Using  token %s" % self.token_count)
         return True
 
     @property

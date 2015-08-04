@@ -168,14 +168,10 @@ def grafanize():
 
     retries = config.get('retries')
     retry_interval = config.get('retry_interval')
-    logger.info("Rate tokens: %s" % config['api_limit_rate_tokens'])
-    logger.info("Rate seconds: %s" % config['api_limit_rate_seconds'])
     limiters.start_limiter('api',
         config['api_limit_rate_tokens'],
         config['api_limit_rate_seconds']
     )
-
-    logger.info("Rate: %s" % limiters.get_limiter('api').fill_rate)
 
     for i in xrange(1, retries + 1):
         logger.debug("Attempt %s" % i)
@@ -201,7 +197,9 @@ def grafanize():
                     time.time() - start
                 )
             )
-            logger.info('Api rate: %s calls per min'
+            logger.info("Api calls: %s"
+                        % limiters.get_limiter('api').token_count)
+            logger.info('Api rate: %s calls per sec'
                         % limiters.get_limiter('api').get_usage_rate())
             break
         except:
