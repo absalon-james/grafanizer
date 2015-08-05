@@ -49,6 +49,15 @@ function dashboard_row(hit) {
     return $row;
 }
 
+function queryData(size, from) {
+    return {
+        from: from,
+        size: size,
+        sort: ['_uid'],
+        fields: ['title']
+    };
+}
+
 // accessable variables in this scope
 var window, document, ARGS, $, jQuery, moment, kbn;
 
@@ -67,63 +76,60 @@ return function(callback) {
     };
 
     // Set a title
+    dashboard.style = 'light';
     dashboard.title = 'Cloud Dashboard Index';
     dashboard.time = {
         from: "now-" + (ARGS.from || timspan),
         to: "now"
     };
 
-    var queryData = {
-        size: 150,
-        sort: ['_uid'],
-        fields: ['title']
-    };
+    var $content = $('<div></div>');
+    var $container = $('<div class="search-results-container"></div>')
+        .css('height', 'auto');
+    $content.append($container);
 
-    $.ajax({
-        method: 'POST',
-        url: '/elasticsearch/grafana-dash/dashboard/_search',
-        data: JSON.stringify(queryData)
-    })
-    .done(function(result) {
-        console.log("inside done");
-        $content = $('<div></div>');
-        $container = $('<div class="search-results-container"></div>')
-            .css('height', 'auto');
-        $content.append($container);
+    var so_far = 0;
+
+    function success(result) {
         if (result.hits.total > 0) {
-            for (var i = 0; i < result.hits.total; i++) {
+            for (var i = 0; i < result.hits.hits.length; i++) {
                 $container.append(dashboard_row(result.hits.hits[i]));
             }
+            so_far += result.hits.hits.length;
         }
-        else {
-            $container.html("OOPS. I didn't find any dashboards in the database.");
+        if (so_far < result.hits.total) {
+            get_more(150, so_far);
+    }
+    else {
+            finish();
         }
+    }
 
-        d_row = create_row($content);
-        if (dashboard.rows.length > 0) {
-            dashboard.rows[0] = d_row;
-        }
-        else {
-            dashboard.rows.push(d_row);
-        }
-        callback(dashboard);
-    })
-    .fail(function(jqXHR, textStatus) {
-        console.log("inside fail");
-        $content = $('<div></div>');
-        $container = $('<div class="search-results-container"></div>')
-            .css('height', 'auto');
+    function failure(jqXHR, textStatus) {
         $container.html("OOPS. I didn't find any dashboards in the database.");
-        $content.append($container);
-        console.log($container);
+        finish();
+    }
 
-        d_row = create_row($content);
+    function get_more(size, start) {
+        $.ajax({
+            method: 'POST',
+            url: '/elasticsearch/grafana-dash/dashboard/_search',
+            data: JSON.stringify(queryData(size, start))
+        })
+        .done(success)
+        .fail(failure);
+    }
+
+    function finish() {
+        row = create_row($content);
         if (dashboard.rows.length > 0) {
-            dashboard.rows[0] = d_row;
+            dashboard.rows[0] = row;
         }
         else {
-            dashboard.rows.push(d_row);
+            dashboard.rows.push(row);
         }
         callback(dashboard);
-    });
+    }
+
+    get_more(150, 0);
 }
